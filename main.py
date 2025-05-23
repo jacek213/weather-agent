@@ -125,6 +125,8 @@ def main():
             # print(f"Weather JSON: {weather_json}")
             answer = ask_gemini_for_answer(question, weather_json, instructions)
             print(f"Odpowiedź: {answer}")
+            # Text-to-speech for the answer using macOS 'say' with Polish voice
+            os.system(f'say -v Zosia "{answer}"')
         else:
             print(f"Błąd API: {response.status_code} - {response.text}")
 
