@@ -79,6 +79,7 @@ def ask_gemini_for_answer(question, weather_json, instructions):
         f"{question}'. Here is the JSON response from the weather API: {weather_json}\n"
         f"Based on the instructions provided: {instructions} extract the relevant data from the API response and provide a human-readable answer. "
         "If the answer cannot be determined, say so."
+        "The answer should be in Polish. Should not include technical details, api response, we need to hide that from the end user. Just a concise answer with some details if relevant."
     )
     contents = types.Content(
         role='user',
@@ -96,7 +97,21 @@ def main():
     if question:
         print(f"Twoje pytanie: {question}")
         endpoint_response = ask_gemini_for_endpoint(question, CITY)
-        endpoint_json = json.loads(endpoint_response)
+        print(f"Endpoint response: {endpoint_response}")  # Debug: show raw Gemini output
+        # Try to extract JSON from code block if present
+        cleaned_response = endpoint_response.strip()
+        if cleaned_response.startswith('```'):
+            # Remove code block markers and possible language specifier
+            cleaned_response = cleaned_response.split('\n', 1)[-1]
+            if cleaned_response.endswith('```'):
+                cleaned_response = cleaned_response.rsplit('```', 1)[0]
+            cleaned_response = cleaned_response.strip()
+        # Try to parse JSON
+        try:
+            endpoint_json = json.loads(cleaned_response)
+        except Exception as e:
+            print(f"Nie można sparsować endpoint_response jako JSON: {e}\nOdpowiedź Gemini: {endpoint_response}")
+            return
         api_url = endpoint_json.get("api_url")
         instructions = endpoint_json.get("instructions")
         print(f"API URL: {api_url}")
