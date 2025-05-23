@@ -12,7 +12,8 @@ This is a simple Python agent that fetches weather data from an API (e.g., OpenW
    pip install -r requirements.txt
    ```
 2. Get a free API key from [OpenWeatherMap](https://openweathermap.org/api).
-3. Set your API key and city in the `main.py` file.
+3. `cp .env.example .env`
+4. Fill out the .env with api key and city.
 
 ## Virtual Environment (Recommended)
 To avoid dependency conflicts, create a virtual environment before installing dependencies:
