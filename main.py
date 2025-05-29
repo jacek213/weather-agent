@@ -11,18 +11,7 @@ API_KEY = os.getenv("API_KEY")
 CITY = os.getenv("CITY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-
 geminiClient = genai.Client(api_key=GEMINI_API_KEY)
-
-# breakpoint()
-
-# System prompt for GPT with OpenWeatherMap API docs summary
-SYSTEM_PROMPT = """
-You are a weather assistant. You have access to the OpenWeatherMap API (https://openweathermap.org/current). The user will ask questions about the weather in a given city. You can instruct the Python agent to call the API using the endpoint:
-GET https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric
-The API returns current weather, temperature, rain (if present), and more. If the user asks about rain in the last hour, check the 'rain' field in the response. If the user asks about current weather, check the 'weather' array and 'main'/'description'.
-Reply with a JSON object describing which API call to make and what to extract from the response. If the answer can be given from the current weather endpoint, use it. If not, say you cannot answer with the current API access.
-"""
 
 
 def recognize_speech(lang="pl-PL"):
@@ -58,8 +47,8 @@ def ask_gemini_for_endpoint(question, city):
         "Just return a JSON object with the api_url and instructions. Do not include any other text or explanation, so it can be easily parsed by the Python agent.\n Do not wrap the code into a fenced code block. Dont add newlines. Example response: \n"
         "{\"api_url\": \"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric\", \"instructions\": \"Check the 'weather' array and 'main'/'description' for current weather.\"}\n"
         "If the answer cannot be determined, return an error message in the JSON object and give nulls to api_url and instructions\n"
+        "If the question requires knowledge on topics different than weather, you're now an expert in that topic (e.g. fishing) and try to provide the best instructions to extract data relevant to that question. \n"
     )
-
 
     contents = types.Content(
         role='user',
@@ -75,11 +64,11 @@ def ask_gemini_for_endpoint(question, city):
 
 def ask_gemini_for_answer(question, weather_json, instructions):
     prompt = (
-        "You are a weather assistant and a openweathermap api expert. The user asked the following question: '"
+        "You are a weather assistant and a openweathermap api expert, also a fishing expert consultant. The user asked the following question: '"
         f"{question}'. Here is the JSON response from the weather API: {weather_json}\n"
-        f"Based on the instructions provided: {instructions} extract the relevant data from the API response and provide a human-readable answer. "
+        f"Based on the instructions provided: {instructions} extract the relevant data from the API response and provide a human-friendly answer. "
         "If the answer cannot be determined, say so."
-        "The answer should be in Polish. Should not include technical details, api response, we need to hide that from the end user. Just a concise answer with some details if relevant."
+        "The answer should be in Polish. Should not include technical details, api response, we need to hide that from the end user. Just a concise answer, keep it short, dont say full date and stuff. Respond like an old uncle joker, not a robot. "
     )
     contents = types.Content(
         role='user',
@@ -106,7 +95,6 @@ def main():
             if cleaned_response.endswith('```'):
                 cleaned_response = cleaned_response.rsplit('```', 1)[0]
             cleaned_response = cleaned_response.strip()
-        # Try to parse JSON
         try:
             endpoint_json = json.loads(cleaned_response)
         except Exception as e:
@@ -122,10 +110,8 @@ def main():
         response = requests.get(api_url)
         if response.status_code == 200:
             weather_json = response.json()
-            # print(f"Weather JSON: {weather_json}")
             answer = ask_gemini_for_answer(question, weather_json, instructions)
             print(f"Odpowiedź: {answer}")
-            # Text-to-speech for the answer using macOS 'say' with Polish voice
             os.system(f'say -v Zosia "{answer}"')
         else:
             print(f"Błąd API: {response.status_code} - {response.text}")
