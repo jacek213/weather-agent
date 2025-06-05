@@ -17,16 +17,16 @@ geminiClient = genai.Client(api_key=GEMINI_API_KEY)
 def recognize_speech(lang="pl-PL"):
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Powiedz coś (Say something)...")
+        print("Say something...")
         audio = recognizer.listen(source)
     try:
         text = recognizer.recognize_google(audio, language=lang)
-        print(f"Rozpoznano (Recognized): {text}")
+        print(f"Recognized: {text}")
         return text
     except sr.UnknownValueError:
-        print("Nie rozpoznano mowy (Could not understand audio)")
+        print("Could not understand audio")
     except sr.RequestError as e:
-        print(f"Błąd połączenia z usługą rozpoznawania mowy: {e}")
+        print(f"Speech recognition service error: {e}")
     return None
 
 
@@ -84,7 +84,7 @@ def ask_gemini_for_answer(question, weather_json, instructions):
 def main():
     question = recognize_speech()
     if question:
-        print(f"Twoje pytanie: {question}")
+        print(f"Your question: {question}")
         endpoint_response = ask_gemini_for_endpoint(question, CITY)
         print(f"Endpoint response: {endpoint_response}")  # Debug: show raw Gemini output
         # Try to extract JSON from code block if present
@@ -98,7 +98,7 @@ def main():
         try:
             endpoint_json = json.loads(cleaned_response)
         except Exception as e:
-            print(f"Nie można sparsować endpoint_response jako JSON: {e}\nOdpowiedź Gemini: {endpoint_response}")
+            print(f"Could not parse endpoint_response as JSON: {e}\nGemini response: {endpoint_response}")
             return
         api_url = endpoint_json.get("api_url")
         instructions = endpoint_json.get("instructions")
@@ -111,10 +111,10 @@ def main():
         if response.status_code == 200:
             weather_json = response.json()
             answer = ask_gemini_for_answer(question, weather_json, instructions)
-            print(f"Odpowiedź: {answer}")
+            print(f"Answer: {answer}")
             os.system(f'say -v Zosia "{answer}"')
         else:
-            print(f"Błąd API: {response.status_code} - {response.text}")
+            print(f"API error: {response.status_code} - {response.text}")
 
 if __name__ == "__main__":
     main()
