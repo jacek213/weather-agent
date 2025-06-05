@@ -2,8 +2,6 @@
 
 This is a Python agent that fetches weather data from OpenWeatherMap and answers user questions about the weather using voice recognition and Gemini AI. The agent can also speak the answer aloud.
 
-The goal was to creatively use LLMs to make it's own decisions (make it a true agent).
-
 ## How it works
 
 - The agent listens for a question via your microphone.
@@ -11,12 +9,6 @@ The goal was to creatively use LLMs to make it's own decisions (make it a true a
 - Proper Weather API endpoint is called from python as indicated in the Gemini response.
 - Gemini AI recevies the api response, extraction instructions and original question to provide the final response.
 - The Gemini response is spoken out loud (macOS only).
-
-## Features
-- Voice recognition (Polish, via microphone)
-- Fetches current weather or forecast for a specified city
-- Uses Gemini AI to interpret user questions and extract relevant weather data
-- Answers are spoken aloud (macOS, Polish voice)
 
 ## Setup
 1. Install portaudio via brew
