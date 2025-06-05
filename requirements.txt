@@ -3,3 +3,4 @@ python-dotenv
 speechrecognition
 pyaudio
 openai
+google-genai
